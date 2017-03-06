@@ -13,16 +13,21 @@ angular.module('starter.controllers', [])
   //$scope.$on('$ionicView.enter', function(e) {
   //});
 
+
+//  var audioElement = document.getElementById("radioAudio");
+//  var audioSourceElement = document.getElementById('radioPlayListURL');
+  var playingId = -1;
+
   $scope.checkItems = {};
+  $scope.backgroundPlay = {};
   $scope.chats = Chats.all();
   $scope.filteredRadios = Chats.getAllFiltered();
   $scope.favoriteRadios = Chats.getAllFavorite();
   $scope.normalRadios = Chats.getAllNormal();
-  $scope.remove = function(chat) {
-    Chats.remove(chat);
-  };
+
   $scope.switchIcon = function(chat){
-    if (chat.id == Chats.playingRadioChannel()){
+    if (chat.id == playingId){
+//    if (chat.id == Chats.playingRadioChannel()){
       return "icon ion-pause";
     }
     else {
@@ -30,34 +35,6 @@ angular.module('starter.controllers', [])
     }
   };
 
-  var timeoutHandle = null;
-  $scope.togglePlayRadio = function(chat){
-
-    // get how long to play
-    var duration = 0;
-    angular.forEach($scope.checkItems, function(value, key){
-      if (value){
-        duration = 5000;
-      }
-    });
-
-    // clear timeout
-    if (timeoutHandle){
-      clearTimeout(timeoutHandle);
-      timeoutHandle = null;
-    }
-
-    // stop after playing for duration
-    if(Chats.togglePlayRadioChannel(chat)){
-      if (duration > 0){
-        timeoutHandle = setTimeout(function(){
-          Chats.stopPlaying();
-          timeoutHandle = null;
-          $scope.$apply();
-        }, duration);
-      }
-    };
-  }
   $scope.toggleFavorite = function(chat){
     Chats.toggleFavoriteChannel(chat);
   }
@@ -85,12 +62,129 @@ angular.module('starter.controllers', [])
     console.log("new "+newVal+string1.includes(string2)+" "+string1.includes(string3)+" "+string1.includes(string4));
   }
 
-  $scope.$watch('search', function(oldValue, newValue){
-    //alert('changed');
-    console.log("old "+ oldValue + " new "+newValue);
-//    alert("old "+ oldValue+ " new " + newValue);
-  // todo filter favorite and non favorite list
-  })
+//   $scope.$watch('search', function(oldValue, newValue){
+//     //alert('changed');
+//     console.log("old "+ oldValue + " new "+newValue);
+// //    alert("old "+ oldValue+ " new " + newValue);
+//   // todo filter favorite and non favorite list
+
+  document.addEventListener('deviceready', function(){
+    var media = null;
+
+    $scope.remove = function(chat) {
+      if (playingId == chat.id){
+        playingId = -1;
+        if (media){
+          media.stop();
+          media.release();
+          media = null;
+
+        }
+//        audioElement.pause();
+      }
+      Chats.remove(chat);
+    };
+
+
+
+    var timeoutHandle = null;
+      $scope.togglePlayRadio = function(chat){
+         cordova.plugins.backgroundMode.enable();
+         cordova.plugins.backgroundMode.onactivate = function(){
+           var backgroundPlayVal = 0;
+           angular.forEach($scope.backgroundPlay, function(value, key){
+             if (value){
+               backgroundPlayVal = 1;
+             }
+           });
+          //  var backgroundPlay = 0;
+          //  angular.forEach($scope.backgroundPlay, function(value, key){
+          //    if (value){
+          //      backgroundPlay = 1;
+          //    }
+          //  });
+          if (backgroundPlayVal == 0){
+          //  if (backgroundPlay == 0){
+             if (media){
+               media.stop();
+               media.release();
+               media = null;
+               playingId = -1;
+             }
+           }
+
+
+  // //        myaudio.load();
+  // //        myaudio.play();
+  //         // audioElement.pause();
+  //         // audioElement.load();
+  //         // audioElement.play();
+  // //        alert("aaa");
+  //
+  //         if (playingId >= 0){
+  // //        if (Chats.playingRadioChannel() >= 0){
+  //           // Chats.forcePlayRadioChannel();
+  //           audioElement.load();
+  //           audioElement.play();
+        };
+
+        // get how long to play
+        var duration = 0;
+        angular.forEach($scope.checkItems, function(value, key){
+          if (value){
+            duration = 5000;
+          }
+        });
+
+        // clear timeout
+        if (timeoutHandle){
+          clearTimeout(timeoutHandle);
+          timeoutHandle = null;
+        }
+
+        // stop after playing for duration
+        if (playingId == chat.id){
+          playingId = -1;
+//          audioElement.pause();
+          if (media){
+            media.stop();
+            media.release();
+            media = null;
+
+          }
+        }
+        else {
+          playingId = chat.id;
+          if (media){
+            media.stop();
+            media.release();
+            media = null;
+          }
+          media = new Media(chat.url);
+          // audioElement.pause();
+          // audioSourceElement.src = chat.url;
+          // audioElement.load();
+          // audioElement.play();
+          media.play();
+
+          if (duration > 0){
+            timeoutHandle = setTimeout(function(){
+              // Chats.stopPlaying();
+              playingId = -1;
+              if (media){
+                media.stop();
+                media.release();
+                media = null;
+              }
+              //audioElement.pause();
+              timeoutHandle = null;
+              $scope.$apply();
+            }, duration);
+          }
+        }
+      }
+  });
+//});
 })
 
 .controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {

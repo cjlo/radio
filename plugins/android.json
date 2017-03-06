@@ -27,7 +27,20 @@
         },
         "cordova-plugin-nativeaudio": {
             "PACKAGE_NAME": "com.ionicframework.testcard2935757"
+        },
+        "cordova-plugin-background-mode": {
+            "PACKAGE_NAME": "com.ionicframework.testcard2935757"
+        },
+        "cordova-plugin-media": {
+            "PACKAGE_NAME": "com.ionicframework.testcard2935757"
         }
     },
-    "dependent_plugins": {}
+    "dependent_plugins": {
+        "cordova-plugin-compat": {
+            "PACKAGE_NAME": "com.ionicframework.testcard2935757"
+        },
+        "cordova-plugin-file": {
+            "PACKAGE_NAME": "com.ionicframework.testcard2935757"
+        }
+    }
 }
