@@ -304,6 +304,6 @@ angular.module('starter.services', [])
           allFilteredRadios.push(normalRadios[i]);
         }
       }
-    }
+    } 
   };
 });
